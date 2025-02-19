@@ -5,9 +5,11 @@ on:
     branches:
       - main
       - staging
+      - juan
+      - drew
 
 jobs:
-  sync-main:
+  sync-main-to-devs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
@@ -21,20 +23,21 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
-      - name: Authenticate using PAT
-        run: |
-          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/drewster1019/Falcon.git
+      - name: Fetch latest changes
+        run: git fetch --all
 
-      - name: Merge main into all branches
+      - name: Merge main into Drew and Juan
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
-          for branch in staging juan drew; do
-            git fetch origin $branch
+          git remote set-url origin https://x-access-token:$GH_PAT@github.com/${{ github.repository }}.git
+          for branch in juan drew; do
             git checkout $branch || continue
-            git merge origin/main --no-edit || echo "Merge conflict in $branch"
-            git push origin $branch || echo "Push failed for $branch"
+            git merge origin/main --no-edit || continue
+            git push origin $branch || continue
           done
 
-  sync-staging:
+  sync-staging-to-devs:
     if: github.ref == 'refs/heads/staging'
     runs-on: ubuntu-latest
     steps:
@@ -48,15 +51,16 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
-      - name: Authenticate using PAT
-        run: |
-          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/drewster1019/Falcon.git
+      - name: Fetch latest changes
+        run: git fetch --all
 
-      - name: Merge staging into juan and drew
+      - name: Merge staging into Drew and Juan
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
+          git remote set-url origin https://x-access-token:$GH_PAT@github.com/${{ github.repository }}.git
           for branch in juan drew; do
-            git fetch origin $branch
             git checkout $branch || continue
-            git merge origin/staging --no-edit || echo "Merge conflict in $branch"
-            git push origin $branch || echo "Push failed for $branch"
+            git merge origin/staging --no-edit || continue
+            git push origin $branch || continue
           done
