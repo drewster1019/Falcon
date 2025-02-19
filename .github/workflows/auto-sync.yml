@@ -26,15 +26,15 @@ jobs:
       - name: Fetch latest changes
         run: git fetch --all
 
-      - name: Merge main into Drew and Juan
+      - name: Rebase main into Drew and Juan
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           git remote set-url origin https://x-access-token:$GH_PAT@github.com/${{ github.repository }}.git
           for branch in juan drew; do
             git checkout $branch || continue
-            git merge origin/main --no-edit || continue
-            git push origin $branch || continue
+            git rebase --autostash origin/main || (git rebase --abort && continue)
+            git push origin $branch --force-with-lease || continue
           done
 
   sync-staging-to-devs:
@@ -54,13 +54,13 @@ jobs:
       - name: Fetch latest changes
         run: git fetch --all
 
-      - name: Merge staging into Drew and Juan
+      - name: Rebase staging into Drew and Juan
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           git remote set-url origin https://x-access-token:$GH_PAT@github.com/${{ github.repository }}.git
           for branch in juan drew; do
             git checkout $branch || continue
-            git merge origin/staging --no-edit || continue
-            git push origin $branch || continue
+            git rebase --autostash origin/staging || (git rebase --abort && continue)
+            git push origin $branch --force-with-lease || continue
           done
