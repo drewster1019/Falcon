@@ -25,19 +25,12 @@ jobs:
         run: |
           git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/drewster1019/Falcon.git
 
-      - name: Merge main into staging first
+      - name: Merge main into all branches
         run: |
-          git fetch origin staging
-          git checkout staging
-          git merge origin/main --no-edit || echo "Merge conflict in staging"
-          git push origin staging || echo "Push failed for staging"
-
-      - name: Merge main into juan and drew (indirectly via staging)
-        run: |
-          for branch in juan drew; do
+          for branch in staging juan drew; do
             git fetch origin $branch
             git checkout $branch || continue
-            git merge origin/staging --no-edit || echo "Merge conflict in $branch"
+            git merge origin/main --no-edit || echo "Merge conflict in $branch"
             git push origin $branch || echo "Push failed for $branch"
           done
 
