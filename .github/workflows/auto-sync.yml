@@ -1,0 +1,52 @@
+name: Auto Sync Branches
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+
+jobs:
+  sync-main:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+      - name: Merge main into all branches
+        run: |
+          for branch in staging juan drew; do
+            git checkout $branch || continue
+            git merge origin/main --no-edit || continue
+            git push origin $branch || continue
+          done
+
+  sync-staging:
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+      - name: Merge staging into juan and drew
+        run: |
+          for branch in juan drew; do
+            git checkout $branch || continue
+            git merge origin/staging --no-edit || continue
+            git push origin $branch || continue
+          done
