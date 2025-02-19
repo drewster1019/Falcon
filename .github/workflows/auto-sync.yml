@@ -21,12 +21,17 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
+      - name: Authenticate using PAT
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/drewster1019/Falcon.git
+
       - name: Merge main into all branches
         run: |
           for branch in staging juan drew; do
+            git fetch origin $branch
             git checkout $branch || continue
-            git merge origin/main --no-edit || continue
-            git push origin $branch || continue
+            git merge origin/main --no-edit || echo "Merge conflict in $branch"
+            git push origin $branch || echo "Push failed for $branch"
           done
 
   sync-staging:
@@ -43,10 +48,15 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
+      - name: Authenticate using PAT
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/drewster1019/Falcon.git
+
       - name: Merge staging into juan and drew
         run: |
           for branch in juan drew; do
+            git fetch origin $branch
             git checkout $branch || continue
-            git merge origin/staging --no-edit || continue
-            git push origin $branch || continue
+            git merge origin/staging --no-edit || echo "Merge conflict in $branch"
+            git push origin $branch || echo "Push failed for $branch"
           done
